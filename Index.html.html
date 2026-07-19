@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledgr — Feedback</title>
+<meta name="description" content="Help shape Ledgr. Share feedback and a quick word on how it's working for you.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  /* ============ FEEDBACK EMAIL — replace before deploying ============ */
+  /* Search this file for FEEDBACK_EMAIL to find the one place it's used. */
+
+  :root{
+    --bg:#040605;
+    --surface: rgba(255,255,255,0.045);
+    --surface-strong: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.09);
+    --text: #F4F7F5;
+    --text-dim: #93A199;
+    --text-faint: #5C6862;
+    --mint: #34D379;
+    --forest: #0B5E3A;
+    --gold: #FFC94A;
+    --accent-blue: #3E8DFF;
+    --accent-orange: #FFA726;
+    --accent-purple: #A87BE8;
+    --accent-red: #FF6B6B;
+    --radius-card: 22px;
+    --radius-pill: 999px;
+    --maxw: 880px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  h1,h2,h3{
+    font-family:'Manrope', sans-serif;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+
+  /* ---------- ambient background glows, echoing the app's empty states ---------- */
+  .glow{
+    position:fixed;
+    border-radius:50%;
+    filter:blur(90px);
+    opacity:0.35;
+    pointer-events:none;
+    z-index:0;
+  }
+  .glow-1{ width:520px; height:520px; top:-160px; left:-160px; background:var(--mint); }
+  .glow-2{ width:460px; height:460px; top:120px; right:-180px; background:var(--accent-blue); opacity:0.22;}
+  .glow-3{ width:480px; height:480px; bottom:-200px; left:20%; background:var(--accent-purple); opacity:0.18;}
+
+  .wrap{
+    position:relative;
+    z-index:1;
+    max-width:var(--maxw);
+    margin:0 auto;
+    padding:0 24px;
+  }
+
+  /* ---------- nav ---------- */
+  nav{
+    position:sticky; top:0; z-index:10;
+    backdrop-filter:blur(20px) saturate(140%);
+    -webkit-backdrop-filter:blur(20px) saturate(140%);
+    background:rgba(4,6,5,0.55);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-inner{
+    max-width:var(--maxw); margin:0 auto; padding:14px 24px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand-name{ font-family:'Manrope'; font-weight:800; font-size:18px; }
+  nav a.cta{
+    font-size:14px; font-weight:600; color:var(--bg);
+    background:linear-gradient(135deg, var(--mint), var(--forest));
+    padding:9px 18px; border-radius:var(--radius-pill);
+    text-decoration:none;
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:96px 0 64px;
+    text-align:center;
+  }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:13px; font-weight:600; color:var(--text-dim);
+    background:var(--surface); border:1px solid var(--border);
+    padding:6px 14px; border-radius:var(--radius-pill);
+    margin-bottom:28px;
+  }
+  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background:var(--mint); box-shadow:0 0 8px var(--mint);}
+  .hero h1{
+    font-size:clamp(36px, 6vw, 58px);
+    font-weight:800;
+    line-height:1.05;
+    max-width:680px;
+    margin:0 auto;
+  }
+  .hero h1 .accent{
+    background:linear-gradient(135deg, var(--mint), #7FE8AC);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero p{
+    color:var(--text-dim); font-size:18px; line-height:1.6;
+    max-width:520px; margin:22px auto 0;
+  }
+
+  /* signature trajectory line */
+  .trajectory-wrap{
+    max-width:640px; margin:56px auto 0; position:relative;
+  }
+  .trajectory-wrap svg{ width:100%; height:auto; display:block; overflow:visible; }
+  .traj-path{
+    fill:none; stroke:url(#trajGrad); stroke-width:3.5; stroke-linecap:round; stroke-linejoin:round;
+    stroke-dasharray:600; stroke-dashoffset:600;
+    animation:draw 1.8s cubic-bezier(.4,0,.2,1) 0.3s forwards;
+  }
+  .traj-area{ fill:url(#areaGrad); opacity:0; animation:fadeIn 1s ease 1.6s forwards; }
+  .traj-base{ stroke:rgba(255,255,255,0.18); stroke-width:1.5; }
+  .traj-dot-glow{ fill:var(--gold); opacity:0.28; filter:blur(6px); }
+  .traj-dot{ fill:var(--gold); opacity:0; animation:fadeIn 0.5s ease 2s forwards; }
+  @keyframes draw{ to{ stroke-dashoffset:0; } }
+  @keyframes fadeIn{ to{ opacity:1; } }
+
+  .hero-download-btn{
+    display:inline-flex; align-items:center; gap:10px;
+    margin-top:40px; padding:14px 30px;
+    background:linear-gradient(135deg, var(--gold), #E8A93E);
+    color:#2A1D00; font-weight:800; font-family:'Manrope';
+    font-size:15.5px; border-radius:var(--radius-pill);
+    text-decoration:none;
+    box-shadow:0 8px 30px rgba(255,201,74,0.25);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .hero-download-btn:hover{ transform:translateY(-2px); box-shadow:0 12px 36px rgba(255,201,74,0.35); }
+
+  /* ---------- section shell ---------- */
+  section{ padding:64px 0; }
+  .section-head{ text-align:center; margin-bottom:40px; }
+  .section-head h2{ font-size:clamp(26px,4vw,34px); font-weight:800; }
+  .section-head p{ color:var(--text-dim); font-size:16px; margin-top:10px; }
+
+  /* ---------- feature grid ---------- */
+  .grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:14px;
+  }
+  @media (max-width:720px){ .grid{ grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:480px){ .grid{ grid-template-columns:1fr;} }
+
+  .feature-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-card);
+    padding:22px 20px;
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+  }
+  .feature-icon{
+    width:38px; height:38px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; margin-bottom:14px;
+  }
+  .feature-card h3{ font-size:15.5px; font-weight:700; margin-bottom:6px; }
+  .feature-card p{ font-size:13.5px; color:var(--text-dim); line-height:1.5; margin:0; }
+
+  /* ---------- glass card (forms) ---------- */
+  .glass{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:28px;
+    padding:36px;
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+  }
+  @media (max-width:600px){ .glass{ padding:24px 20px; border-radius:22px; } }
+
+  /* mood faces */
+  .mood-row{ display:flex; gap:10px; justify-content:space-between; margin:18px 0 28px; }
+  .mood{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:8px;
+    padding:14px 6px; border-radius:16px; border:1px solid var(--border);
+    background:var(--surface); cursor:pointer;
+    transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .mood span.emoji{ font-size:22px; }
+  .mood span.label{ font-size:11px; color:var(--text-dim); font-weight:600; }
+  .mood:hover{ transform:translateY(-2px); }
+  .mood.selected{
+    border-color:var(--mint);
+    background:rgba(52,211,121,0.12);
+  }
+  .mood.selected span.label{ color:var(--mint); }
+
+  /* form fields */
+  label.field-label{
+    display:block; font-size:13px; font-weight:600; color:var(--text-dim);
+    margin-bottom:8px; text-transform:uppercase; letter-spacing:0.02em;
+  }
+  .field{ margin-bottom:22px; }
+  input[type=text], input[type=email], textarea, select{
+    width:100%;
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:13px 16px;
+    color:var(--text);
+    font-family:'Inter';
+    font-size:15px;
+    outline:none;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  input::placeholder, textarea::placeholder{ color:var(--text-faint); }
+  input:focus, textarea:focus, select:focus{
+    border-color:var(--mint);
+    background:rgba(255,255,255,0.07);
+  }
+  textarea{ resize:vertical; min-height:110px; font-family:'Inter'; line-height:1.5; }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    padding:9px 16px; border-radius:var(--radius-pill);
+    border:1px solid var(--border); background:var(--surface);
+    font-size:13.5px; font-weight:600; color:var(--text-dim);
+    cursor:pointer; transition:all .15s ease;
+  }
+  .chip.selected{ border-color:var(--mint); color:var(--mint); background:rgba(52,211,121,0.1); }
+
+  .submit-btn{
+    width:100%; padding:15px; margin-top:8px;
+    border:none; border-radius:16px;
+    background:linear-gradient(135deg, var(--mint), var(--forest));
+    color:#03150A; font-weight:800; font-size:15.5px;
+    font-family:'Manrope';
+    cursor:pointer;
+    transition:filter .15s ease, transform .1s ease;
+  }
+  .submit-btn:hover{ filter:brightness(1.08); }
+  .submit-btn:active{ transform:scale(0.99); }
+
+  .fallback-note{
+    font-size:12.5px; color:var(--text-faint); text-align:center; margin-top:14px; line-height:1.5;
+  }
+  .fallback-note button{
+    background:none; border:none; color:var(--mint); font-weight:600; cursor:pointer;
+    font-size:12.5px; text-decoration:underline; padding:0; font-family:'Inter';
+  }
+
+  .status-msg{
+    display:none; margin-top:16px; padding:12px 16px; border-radius:12px;
+    font-size:13.5px; text-align:center; font-weight:600;
+  }
+  .status-msg.show{ display:block; }
+  .status-msg.ok{ background:rgba(52,211,121,0.12); color:var(--mint); border:1px solid rgba(52,211,121,0.3); }
+
+  /* section divider spacing */
+  .stack-gap{ margin-top:56px; }
+
+  footer{
+    padding:48px 0 64px; text-align:center;
+  }
+  footer p{ color:var(--text-faint); font-size:13px; margin:4px 0; }
+
+  /* keyboard focus visibility */
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, .mood:focus-visible, .chip:focus-visible{
+    outline:2px solid var(--mint); outline-offset:2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="glow glow-3"></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 88 88" fill="none">
+        <defs>
+          <linearGradient id="navGrad" x1="0" y1="0" x2="88" y2="88" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#34D379"/><stop offset="1" stop-color="#0B5E3A"/>
+          </linearGradient>
+        </defs>
+        <rect width="88" height="88" rx="19.7" fill="url(#navGrad)"/>
+        <path d="M12 58 L26 63 L36 54 L45 58 L58 51 L60 49 L67 44" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="67" cy="44" r="5" fill="#FFC94A"/>
+      </svg>
+      <span class="brand-name">Ledgr</span>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <a class="cta" href="#download" style="background:linear-gradient(135deg, var(--gold), #E8A93E); color:#2A1D00;">Download for Android</a>
+      <a class="cta" href="#feedback">Give feedback</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div class="eyebrow"><span class="dot"></span> Built for the way money actually moves</div>
+    <h1>Tell us how <span class="accent">Ledgr</span> is working for you</h1>
+    <p>Two minutes of your time helps shape what gets fixed next and what gets built after that.</p>
+
+    <div class="trajectory-wrap">
+      <svg viewBox="0 0 400 140" fill="none">
+        <defs>
+          <linearGradient id="trajGrad" x1="0" y1="140" x2="400" y2="0" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#34D379"/><stop offset="1" stop-color="#7FE8AC"/>
+          </linearGradient>
+          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="140" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#34D379" stop-opacity="0.16"/><stop offset="1" stop-color="#34D379" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <line class="traj-base" x1="10" y1="118" x2="390" y2="118"/>
+        <path class="traj-area" d="M20,108 C40,116 66,100 84,92 C110,80 122,54 150,44 C172,36 182,32 200,26 C226,16 246,10 270,4 L270,130 L20,130 Z"/>
+        <path class="traj-path" d="M20,108 C40,116 66,100 84,92 C110,80 122,54 150,44 C172,36 182,32 200,26 C226,16 246,10 270,4"/>
+        <circle class="traj-dot-glow" cx="270" cy="4" r="14"/>
+        <circle class="traj-dot" cx="270" cy="4" r="6"/>
+      </svg>
+    </div>
+
+    <a href="#download" class="hero-download-btn">
+      <span>⬇</span> Download for Android
+    </a>
+  </section>
+
+  <section id="download" aria-labelledby="download-head">
+    <div class="section-head">
+      <h2 id="download-head">Get the app</h2>
+      <p>Not on the Play Store — this is a direct download, and that's fine.</p>
+    </div>
+
+    <div class="glass" style="text-align:center;">
+      <div style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg, var(--mint), var(--forest));display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px;">📱</div>
+      <h3 style="font-size:20px; margin-bottom:8px;">Ledgr for Android</h3>
+      <p style="color:var(--text-dim); font-size:14.5px; margin-bottom:24px;">Version 2.0 · APK · ~15 MB</p>
+
+      <!-- APK_DOWNLOAD_URL — replace with the GitHub Release asset link -->
+      <a href="APK_DOWNLOAD_URL" class="submit-btn" style="display:inline-block; width:auto; padding:15px 40px; text-decoration:none;">
+        Download APK
+      </a>
+
+      <div style="text-align:left; margin-top:32px; padding-top:28px; border-top:1px solid var(--border);">
+        <p style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.02em; color:var(--text-dim); margin-bottom:14px;">Installing it</p>
+        <ol style="color:var(--text-dim); font-size:14.5px; line-height:1.8; padding-left:20px; margin:0;">
+          <li>Tap the download button above and open the downloaded file.</li>
+          <li>Android will likely block it with an "unknown source" warning — this is normal for apps outside the Play Store, not a sign anything's wrong.</li>
+          <li>Tap <strong style="color:var(--text);">Settings</strong> in that warning, allow installs from this source, then go back and tap the file again.</li>
+          <li>Already have an older debug/test build installed? You may need to uninstall it first — a differently-signed version can't install over an existing one.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="features-head">
+    <div class="section-head">
+      <h2 id="features-head">What you've been using</h2>
+      <p>A quick reference while you fill in the form below.</p>
+    </div>
+    <div class="grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(52,211,121,0.16);">📈</div>
+        <h3>Net Worth</h3>
+        <p>Monthly trajectory, savings rate, capital vs. earned income kept separate.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(62,141,255,0.16);">🔄</div>
+        <h3>Cash Flow Forecast</h3>
+        <p>A 60-day forward view that catches recurring bills before they surprise you.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(255,167,38,0.16);">🥧</div>
+        <h3>Budgets & Goals</h3>
+        <p>Burn rate, pacing, and SIP-style targets with a real completion date.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(168,123,232,0.16);">🏦</div>
+        <h3>Loans</h3>
+        <p>EMI schedules and a prepayment calculator that shows what you'd actually save.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(255,107,107,0.16);">🧾</div>
+        <h3>Tax Summary</h3>
+        <p>ITR-3 heads, financial-year rollups, and advance-tax reminders on time.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(52,211,121,0.16);">☁️</div>
+        <h3>Backup & Restore</h3>
+        <p>Your data, safe if the phone isn't — tied to your own account, nothing shared.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="feedback" aria-labelledby="feedback-head">
+    <div class="section-head">
+      <h2 id="feedback-head">How's it going?</h2>
+      <p>Every field below is optional except your message — answer what's relevant.</p>
+    </div>
+
+    <form class="glass" id="feedbackForm">
+
+      <label class="field-label">Overall, how do you feel about Ledgr right now?</label>
+      <div class="mood-row" id="moodRow" role="radiogroup" aria-label="Overall feeling">
+        <div class="mood" data-value="Frustrated" tabindex="0" role="radio" aria-checked="false"><span class="emoji">😣</span><span class="label">Frustrated</span></div>
+        <div class="mood" data-value="Mixed" tabindex="0" role="radio" aria-checked="false"><span class="emoji">😐</span><span class="label">Mixed</span></div>
+        <div class="mood" data-value="Good" tabindex="0" role="radio" aria-checked="false"><span class="emoji">🙂</span><span class="label">Good</span></div>
+        <div class="mood" data-value="Love it" tabindex="0" role="radio" aria-checked="false"><span class="emoji">🤩</span><span class="label">Love it</span></div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="category">What's this about?</label>
+        <div class="chip-row" id="categoryRow">
+          <div class="chip" data-value="Bug">Something's broken</div>
+          <div class="chip" data-value="Feature request">A feature idea</div>
+          <div class="chip" data-value="Confusing">Something's confusing</div>
+          <div class="chip" data-value="Praise">Just wanted to say something nice</div>
+          <div class="chip" data-value="General">General thought</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="usedFeature">Which screen or feature is this about?</label>
+        <select id="usedFeature">
+          <option value="">Not specific to one screen</option>
+          <option>Home / Net Worth</option>
+          <option>Transactions</option>
+          <option>Wealth</option>
+          <option>Budgets</option>
+          <option>Goals</option>
+          <option>Cash Flow Forecast</option>
+          <option>Loans</option>
+          <option>Tax Summary</option>
+          <option>Financial Reviews</option>
+          <option>Backup & Restore</option>
+          <option>Sign-in / Account</option>
+          <option>Something else</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="message">Tell us more</label>
+        <textarea id="message" placeholder="What happened, what you expected, or what you wish existed..." required></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="name">Name <span style="text-transform:none; font-weight:400;">(optional)</span></label>
+        <input type="text" id="name" placeholder="So we know who to thank">
+      </div>
+
+      <button type="submit" class="submit-btn">Send feedback</button>
+      <p class="fallback-note">This opens your email app with everything filled in. If nothing opens, <button type="button" id="copyFallback">copy your feedback instead</button>.</p>
+      <div class="status-msg ok" id="statusMsg">Copied — paste it into an email whenever you're ready.</div>
+    </form>
+  </section>
+
+  <section aria-labelledby="quiz-head">
+    <div class="section-head">
+      <h2 id="quiz-head">A few quick questions</h2>
+      <p>Takes about 30 seconds, helps prioritize what's next.</p>
+    </div>
+
+    <form class="glass" id="quizForm">
+      <div class="field">
+        <label class="field-label">How often do you open Ledgr?</label>
+        <div class="chip-row" id="freqRow">
+          <div class="chip" data-value="Daily">Daily</div>
+          <div class="chip" data-value="Few times a week">Few times a week</div>
+          <div class="chip" data-value="Weekly">Weekly</div>
+          <div class="chip" data-value="Rarely">Rarely</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Which feature do you rely on most?</label>
+        <select id="mostUsed">
+          <option value="">Pick one</option>
+          <option>Transactions / logging spend</option>
+          <option>Net worth tracking</option>
+          <option>Budgets</option>
+          <option>Goals</option>
+          <option>Cash flow forecast</option>
+          <option>Tax summary</option>
+          <option>Loans</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Would you recommend Ledgr to a friend managing their own finances?</label>
+        <div class="chip-row" id="recommendRow">
+          <div class="chip" data-value="Definitely">Definitely</div>
+          <div class="chip" data-value="Probably">Probably</div>
+          <div class="chip" data-value="Not sure">Not sure</div>
+          <div class="chip" data-value="Not yet">Not yet</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="missing">What's the one thing missing that would make this indispensable?</label>
+        <textarea id="missing" placeholder="Optional, but this is the good stuff"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn">Send answers</button>
+      <p class="fallback-note">Also opens your email app, same as above.</p>
+    </form>
+  </section>
+
+</div>
+
+<footer>
+  <p>Ledgr · Built one honest number at a time.</p>
+  <p>Version 2.0</p>
+</footer>
+
+<script>
+  // ============================================================
+  // FEEDBACK_EMAIL — replace with the real inbox before deploying
+  // ============================================================
+  const FEEDBACK_EMAIL = "your-email@example.com";
+
+  function setupSingleSelect(rowId, className){
+    const row = document.getElementById(rowId);
+    if(!row) return { get:()=>null };
+    let selected = null;
+    const items = row.querySelectorAll('.' + className);
+    items.forEach(item=>{
+      const choose = ()=>{
+        items.forEach(i=>{ i.classList.remove('selected'); i.setAttribute('aria-checked','false'); });
+        item.classList.add('selected');
+        item.setAttribute('aria-checked','true');
+        selected = item.dataset.value;
+      };
+      item.addEventListener('click', choose);
+      item.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); choose(); } });
+    });
+    return { get:()=>selected };
+  }
+
+  const mood = setupSingleSelect('moodRow','mood');
+  const category = setupSingleSelect('categoryRow','chip');
+  const freq = setupSingleSelect('freqRow','chip');
+  const recommend = setupSingleSelect('recommendRow','chip');
+
+  function openMail(subject, bodyLines){
+    const body = bodyLines.filter(Boolean).join('\n');
+    const url = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = url;
+    return body;
+  }
+
+  document.getElementById('feedbackForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const name = document.getElementById('name').value.trim();
+    const messageVal = document.getElementById('message').value.trim();
+    const feature = document.getElementById('usedFeature').value;
+
+    const lines = [
+      name ? `From: ${name}` : null,
+      `Overall feeling: ${mood.get() || 'Not answered'}`,
+      `Category: ${category.get() || 'Not specified'}`,
+      feature ? `Feature/screen: ${feature}` : null,
+      '',
+      'Message:',
+      messageVal || '(no message written)'
+    ];
+
+    const body = openMail('Ledgr feedback', lines);
+    document.getElementById('feedbackForm').dataset.lastBody = body;
+  });
+
+  document.getElementById('copyFallback').addEventListener('click', async function(){
+    const body = document.getElementById('feedbackForm').dataset.lastBody;
+    const status = document.getElementById('statusMsg');
+    try{
+      await navigator.clipboard.writeText(body || 'Fill in the form first, then tap Send feedback.');
+      status.classList.add('show');
+      setTimeout(()=>status.classList.remove('show'), 3500);
+    }catch(err){
+      alert('Could not copy automatically — please select and copy the message manually.');
+    }
+  });
+
+  document.getElementById('quizForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const mostUsed = document.getElementById('mostUsed').value;
+    const missing = document.getElementById('missing').value.trim();
+
+    const lines = [
+      `How often they use Ledgr: ${freq.get() || 'Not answered'}`,
+      `Most-used feature: ${mostUsed || 'Not answered'}`,
+      `Would recommend: ${recommend.get() || 'Not answered'}`,
+      '',
+      "What's missing:",
+      missing || '(no answer)'
+    ];
+
+    openMail('Ledgr questionnaire responses', lines);
+  });
+</script>
+
+</body>
+</html>
